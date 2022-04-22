@@ -1,81 +1,50 @@
-// ts 发布订阅
-interface EventFace {
-  on: (name: string, callback: Function) => void
-  emit: (name: string, ...args: Array<any>) => void
-  off: (name: string, callback: Function) => void
-  once: (name: string, callback: Function) => void
-}
+import { EventInterface, List } from './types'
 
-interface List {
-  [key: string]: Array<Function>
-}
-
-class Dispatch implements EventFace {
+class Dispatch implements EventInterface {
   list: List
   constructor() {
     this.list = {}
   }
-  on(name: string, callback: Function) {
-    // 订阅者 收集对应监听事件相关回调
-    let temp = this.list[name] || []
-    temp.push(callback)
-    this.list[name] = temp
+  on(name: string, fn: Function) {
+    let callback = this.list[name] || []
+    callback.push(fn)
+    this.list[name] = callback
   }
   emit(name: string, ...args: Array<any>) {
     if (this.list[name]?.length) {
-      this.list[name].forEach((callback) => {
-        callback.apply(this, args)
+      this.list[name].forEach((cb) => {
+        cb.apply(this, args)
       })
     } else {
-      throw new Error('no evnet listening....')
+      console.error('no event.....')
     }
   }
-  off(name: string, callback?: Function) {
-    if (!this.list[name]) {
-      throw new Error('no event needs destroy')
+  off(name: string, fn: Function) {
+    if (this.list[name] && fn) {
+      let index = this.list[name].findIndex((cb) => cb === fn)
+      this.list[name].splice(index, 1)
     } else {
-      if (callback) {
-        let index = this.list[name].findIndex((cb) => cb === callback)
-        this.list[name].splice(index, 1)
-      } else {
-        this.list[name] = [] // 该事件对应的所有回调函数
-      }
+      console.error('no event.....')
     }
   }
-  once(name: string, callback: Function) {
-    // 使用临时函数 用完就删掉
-
+  once(name: string, fn: Function) {
     let tempFn = (...args: Array<any>) => {
-      callback.apply(this, args)
-
+      fn.apply(this, args)
       this.off(name, tempFn)
     }
-
     this.on(name, tempFn)
   }
 }
 
-const test = new Dispatch()
-
-// test.on('zzx', (...args: Array<any>) => {
-//   console.log(`${args}喊你吃饭了`)
-// })
+const o = new Dispatch()
 
 const fn = (...args: Array<any>) => {
-  console.log('hahahah')
+  console.log(...args, 'args')
 }
+// o.on('post', fn)
+o.once('post', fn)
+o.emit('post', 1, false, { name: 'zzx' })
+// o.off('post', fn)
 
-test.once('zzx', fn)
-
-// test.once('zzx', (name: string) => {
-//   console.log(`${name}喊你吃饭了`)
-// })
-
-// test.on('zcy', (name: string) => {
-//   console.log(`${name}喊你做作业`)
-// })
-test.emit('zzx', 'mama')
-// test.off('zzx', fn)
-test.emit('zzx', 'mama')
-// test.emit('zzx', 'mama')
-// test.emit('zcy', 'mama')
+o.emit('post', 2, true, { name: 'zz1x' })
+o.emit('post', 3, false, { name: 'zz1x' })
