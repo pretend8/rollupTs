@@ -1,50 +1,57 @@
-import { EventInterface, List } from './types'
+// ts 发布订阅
+interface EventFace {
+  on: (name: string, callback: Function) => void
+  emit: (name: string, ...args: Array<any>) => void
+  off: (name: string, callback: Function) => void
+  once: (name: string, callback: Function) => void
+}
+interface List {
+  [key: string]: Array<Function>
+}
 
-class Dispatch implements EventInterface {
+class Dispatch implements EventFace {
   list: List
   constructor() {
     this.list = {}
   }
-  on(name: string, fn: Function) {
-    let callback = this.list[name] || []
-    callback.push(fn)
-    this.list[name] = callback
+  on(name: string, callback: Function) {
+    // 订阅者 收集对应监听事件相关回调
+    let temp = this.list[name] || []
+    temp.push(callback)
+    this.list[name] = temp
   }
   emit(name: string, ...args: Array<any>) {
     if (this.list[name]?.length) {
-      this.list[name].forEach((cb) => {
-        cb.apply(this, args)
+      this.list[name].forEach((callback) => {
+        callback.apply(this, args)
       })
     } else {
-      console.error('no event.....')
+      throw new Error('no evnet listening....')
     }
   }
-  off(name: string, fn: Function) {
-    if (this.list[name] && fn) {
-      let index = this.list[name].findIndex((cb) => cb === fn)
-      this.list[name].splice(index, 1)
+  off(name: string, callback?: Function) {
+    if (!this.list[name]) {
+      throw new Error('no event needs destroy')
     } else {
-      console.error('no event.....')
+      if (callback) {
+        let index = this.list[name].findIndex((cb) => cb === callback)
+        this.list[name].splice(index, 1)
+      } else {
+        this.list[name] = [] // 该事件对应的所有回调函数
+      }
     }
   }
-  once(name: string, fn: Function) {
+  once(name: string, callback: Function) {
+    // 使用临时函数 用完就删掉
+
     let tempFn = (...args: Array<any>) => {
-      fn.apply(this, args)
+      callback.apply(this, args)
+
       this.off(name, tempFn)
     }
+
     this.on(name, tempFn)
   }
 }
 
-const o = new Dispatch()
-
-const fn = (...args: Array<any>) => {
-  console.log(...args, 'args')
-}
-// o.on('post', fn)
-o.once('post', fn)
-o.emit('post', 1, false, { name: 'zzx' })
-// o.off('post', fn)
-
-o.emit('post', 2, true, { name: 'zz1x' })
-o.emit('post', 3, false, { name: 'zz1x' })
+export default Dispatch

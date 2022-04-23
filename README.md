@@ -1,1 +1,1 @@
-# rollup ts 打包练习
+# event bus ts

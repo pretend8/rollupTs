@@ -1,16 +1,27 @@
 {
-  "name": "rollupTs",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "name": "zzx-event-bus-ts",
+  "version": "1.0.1",
+  "description": "张志星前端lib库",
+  "main": "lib/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "cross-env NODE_ENV=development  rollup -c -w",
     "build": "cross-env NODE_ENV=produaction  rollup -c"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "ts",
+    "event bus"
+  ],
+  "author": "zhixing zhang",
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pretend8/rollupTs.git"
+  },
+  "typings": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "devDependencies": {
     "cross-env": "^7.0.3",
     "rollup-plugin-livereload": "^2.0.5",

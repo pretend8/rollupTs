@@ -6,18 +6,20 @@ import replace from 'rollup-plugin-replace'
 import { terser } from 'rollup-plugin-terser'
 
 const isDev = () => process.env.NODE_ENV === 'development'
+console.log(!isDev())
 export default {
   input: './src/index.ts',
   output: {
-    file: path.resolve(__dirname, './lib/index.js'),
-    format: 'umd' // js 引入形式
+    file: path.resolve(__dirname, './dist/bundle.min.js'),
+    format: 'esm' // umd js 引入形式,esm es6形式
   },
   plugins: [
-    terser({
-      compress: {
-        drop_console: !isDev()
-      }
-    }), // 代码压缩
+    !isDev() &&
+      terser({
+        compress: {
+          drop_console: true
+        }
+      }), // 代码压缩
     ts(), // 解析入口ts
     isDev() && livereload(), // 热更新
     replace({
